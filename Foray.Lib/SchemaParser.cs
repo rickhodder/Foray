@@ -1,16 +1,11 @@
 ﻿using Foray.Lib.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foray.Lib
 {
     public class SchemaParser
     {
-        private IParser<Entity> _entityParser;
-        private ISchemaFactory _schemaFactory;
+        private readonly IParser<Entity> _entityParser;
+        private readonly ISchemaFactory _schemaFactory;
 
         public SchemaParser(ISchemaFactory schemaFactory, IParser<Entity> entityParser)
         {
