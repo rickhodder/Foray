@@ -12,6 +12,7 @@ namespace Foray.Lib.Tests
         MockRepository _mockRepository;
         Mock<ISchemaFactory> _mockSchemaFactory;
         Mock<IParser<Entity>> _mockEntityParser;
+        private Mock<IParser<Relationship>> _mockRelationshipParser;
 
         [SetUp]
         public void Setup()
@@ -20,8 +21,8 @@ namespace Foray.Lib.Tests
 
             _mockSchemaFactory = _mockRepository.Create<ISchemaFactory>();
             _mockEntityParser = _mockRepository.Create<IParser<Entity>>();
-            
-            _sut = new SchemaParser(_mockSchemaFactory.Object, _mockEntityParser.Object);
+            _mockRelationshipParser = _mockRepository.Create<IParser<Relationship>>();
+            _sut = new SchemaParser(_mockSchemaFactory.Object, _mockEntityParser.Object, _mockRelationshipParser.Object);
 
         }
 
@@ -41,6 +42,7 @@ namespace Foray.Lib.Tests
             _mockSchemaFactory.Setup(m => m.Create()).Returns(schema);
 
             _mockEntityParser.Setup(m => m.Parse(schema)).Returns(new List<Entity>());
+            _mockRelationshipParser.Setup(m => m.Parse(schema)).Returns(new List<Relationship>());
             _sut.Parse();
 
             // verify that all setups are fulfilled on mock
