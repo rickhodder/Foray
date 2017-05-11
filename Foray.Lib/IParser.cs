@@ -5,6 +5,7 @@ namespace Foray.Lib
 {
     public interface IParser<TModel>
     {
-        List<TModel> Parse(Schema schema);
+        List<TModel> Parse(Schema schema, string input);
+
     }
 }

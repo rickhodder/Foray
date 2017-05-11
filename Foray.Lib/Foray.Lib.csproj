@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntityParser.cs" />
     <Compile Include="IParser.cs" />
     <Compile Include="ISchemaFactory.cs" />
     <Compile Include="Model\Entity.cs" />

@@ -15,11 +15,24 @@ namespace Foray.Lib
             _relationshipParser = relationshipParser;
         }
 
-        public void Parse()
+        public Schema Parse(string input)
         {
             var schema = _schemaFactory.Create();
-            var entities = _entityParser.Parse(schema);
-            var relationships = _relationshipParser.Parse(schema);
+            var entities = _entityParser.Parse(schema, input);
+            foreach (var entity in entities)
+            {
+                schema.Entities.Add(entity);
+
+            }
+
+            var relationships = _relationshipParser.Parse(schema, input);
+            foreach (var relationship in relationships)
+            {
+                schema.Relationships.Add(relationship);
+            }
+
+
+            return schema;
         }
     }
 }

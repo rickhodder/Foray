@@ -7,12 +7,7 @@ namespace Foray.Lib.Model
         public string Name { get; set; }
         public string OriginalName { get; set; }
         public string Description { get; set; }
-        public List<EntityField> Fields { get; set; }
-
-        public Entity()
-        {
-            Fields = new List<EntityField>();
-        }
+        public IList<EntityField> Fields { get; private set; } = new List<EntityField>();
     }
 
 }
