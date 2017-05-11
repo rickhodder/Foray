@@ -55,6 +55,7 @@
     <Compile Include="EntityParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SchemaParserTests.cs" />
+    <Compile Include="StateBasedParserTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Foray.Lib\Foray.Lib.csproj">
