@@ -8,7 +8,7 @@ namespace Foray.Lib
 {
     public class EntityParser: IParser<Entity>
     {
-        public List<Entity> Parse(Schema schema, string input)
+        public List<Entity> Parse(Model.Schema schema, string input)
         {
             //var input = "[Customer\r\n* Name\r\nAge]";
             var result = new List<Entity>();

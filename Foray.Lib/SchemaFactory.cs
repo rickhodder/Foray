@@ -2,11 +2,11 @@
 
 namespace Foray.Lib
 {
-    public class SchemaFactory : ISchemaFactory
+    public class Schema : ISchemaFactory
     {
         public Schema Create()
         {
-            return new Schema();
+            return new Model.Schema();
         }
     }
 }

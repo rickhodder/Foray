@@ -14,7 +14,7 @@ namespace Foray.Lib.Tests
         public void Parse_Always_PerformsExpectedWork()
         {
             var input = "[Customer\r\nName\r\nAge]";
-            var schema = new Schema();
+            var schema = new Model.Schema();
             var result = _sut.Parse(schema, input);
             var expected = new Entity
             {
@@ -36,7 +36,7 @@ namespace Foray.Lib.Tests
         public void Parse_WhenMultipleEntitiesSpecified_ReturnsExpectedResult()
         {
             var input = "[Customer\r\nName\r\nAge][Customer2\r\nName\r\nAge]";
-            var schema = new Schema();
+            var schema = new Model.Schema();
             var result = _sut.Parse(schema, input);
             var expected = new Entity
             {

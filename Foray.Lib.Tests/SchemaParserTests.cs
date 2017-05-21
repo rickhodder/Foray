@@ -39,7 +39,7 @@ namespace Foray.Lib.Tests
 
         public void Parse_Always_PerformsExpectedWork()
         {
-            var schema = new Schema();
+            var schema = new Model.Schema();
             var input = "[Customer\r\n* Name\r\nAge]";
 
             var entity = new Entity
