@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 using Castle.DynamicProxy.Tokens;
 using Moq;
 using NUnit.Framework;
@@ -39,8 +41,27 @@ namespace Foray.Lib.Tests
         }
     }
 
+    interface IContext<TInput>
+    {
+        
+    }
+
+    public class x
+    {
+        public void Test()
+        {
+            string _dsl = "";
+            var ms = new MemoryStream();
+
+            ms.Write(Encoding.Default.GetBytes(_dsl.ToCharArray(), 0, _dsl.Length), 0, _dsl.Length);
+            ms.Position = 0;
+        }
+    }
+
+
     public abstract class AbstractStateMachineContext<TOutput, TState> : IDisposable, IStateMachineContext<TOutput, TState> where TState : IState<TOutput>
     {
+        
         public TOutput Output { get; private set; }
         public TState CurrentState { get; private set; }
 
@@ -48,7 +69,7 @@ namespace Foray.Lib.Tests
         {
             CurrentState = state;
         }
-
+        
         protected abstract TOutput CreateOutput();
 
         public virtual TOutput Execute()
@@ -86,5 +107,34 @@ namespace Foray.Lib.Tests
         void Handle(IStateMachineContext<TOutput, IState<TOutput>> context);
     }
 
+    public class StringReader : IDisposable
+    {
+        StreamReader _reader;
+
+        public StringReader(string content)
+        {
+            var ms = new MemoryStream();
+
+            ms.Write(Encoding.Default.GetBytes(content.ToCharArray(), 0, content.Length), 0, content.Length);
+            ms.Position = 0;
+            _reader = new StreamReader(ms);
+        }
+
+        public string GetLine()
+        {
+            return _reader.ReadLine();
+        }
+
+        public bool IsDone()
+        {
+            return _reader.EndOfStream;
+        }
+
+        public void Dispose()
+        {
+            _reader?.Close();
+            _reader = null;
+        }
+    }
 
 }
