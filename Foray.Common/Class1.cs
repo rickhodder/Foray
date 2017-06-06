@@ -2,16 +2,22 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Configuration;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework.Constraints;
 
 namespace Foray.Common
 {
-    public interface IContext<TInput, TOutput>
+    public interface IContext
     {
         Dictionary<string, object> Variables { get; set; }
         List<string> ErrorMessages { get; set; }
         bool Finished { get; set; }
+    }
+
+    public interface IContext<TInput, TOutput>: IContext
+    {
         TInput Input { get; set; }
         TOutput Output { get; set; }
         IState<TInput, TOutput> CurrentState { get; set; }
@@ -103,7 +109,7 @@ namespace Foray.Common
                 context.SetState(new FieldState());
                 return;
             }
-            if (context.Input.CurrentLine.Contains("<") || context.Input.CurrentLine.Contains(">"))
+            if (context.Input.CurrentLine.Contains("<") || context.Input.CurrentLine.Contains(">") || context.Input.CurrentLine.Contains("-"))
             {
                 context.SetState(new RelationshipState());
                 return;
@@ -118,7 +124,16 @@ namespace Foray.Common
         public override void Handle(IContext<StringReader, Schema> context)
         {
             var entityName = context.Input.CurrentLine.Trim();
-            var entity = new Entity { Name = entityName };
+            var entity = context.Output.FindEntity(entityName);
+
+            if (entity != null)
+            {
+                context.SetState(new ErrorState($"Entity {entityName} is has already been created."));
+                context.Finished = true;
+                return;
+            }
+
+            entity = new Entity { Name = entityName };
             context.Output.Entities.Add(entity);
             context.Variables["lastentity"] = entity;
             context.SetState(new FindingState());
@@ -162,16 +177,16 @@ namespace Foray.Common
             context.Variables.Remove("lastentity");
             var test = context.Input.CurrentLine.Trim();
 
-            bool oneToOne = test.Contains('-') && !test.Contains('>') && !test.Contains('<');
-            bool oneToMany = test.Contains("->") || (test.Contains(">") && !test.Contains('<'));
-            bool manyToMany = test.Contains("<") && test.Contains(">");
+            var oneToOne = test.Contains('-') && !test.Contains('>') && !test.Contains('<');
+            var oneToMany = test.Contains("->") || (test.Contains(">") && !test.Contains('<'));
+            var manyToMany = test.Contains("<") && test.Contains(">");
 
             string[] pieces;
-            string entityName1 = "";
-            string entityName2 = "";
-            string entityName3 = "";
+            var entityName1 = "";
+            var entityName2 = "";
+            var entityName3 = "";
 
-            RelationshipType relType = RelationshipType.Self;
+            var relType = RelationshipType.Self;
 
             if (oneToOne)
             {
@@ -226,17 +241,25 @@ namespace Foray.Common
         }
         public override void Handle(IContext<StringReader, Schema> context)
         {
-            context.ErrorMessages.Add(_message);
+            context.ErrorMessages.Add($"Line {context.Input.LineNumber}: {context.Input.CurrentLine}\r\n{_message}");
             context.Finished = true;
-
         }
     }
-    
-    public class StringReader : IDisposable
+
+    public interface IStringReader : IDisposable
+    {
+        string CurrentLine { get; }
+        int LineNumber { get; set; }
+        string GetLine();
+        bool IsDone();
+    }
+
+    public class StringReader : IStringReader
     {
         StreamReader _reader;
 
         public string CurrentLine { get; private set; }
+        public int LineNumber { get; set; }
 
         public StringReader(string content)
         {
@@ -250,6 +273,7 @@ namespace Foray.Common
         public string GetLine()
         {
             CurrentLine = "";
+            LineNumber++;
 
             while (!_reader.EndOfStream)
             {
@@ -344,11 +368,20 @@ namespace Foray.Common
     {
         public string Name { get; set; }
         public List<EntityField> Fields { get; set; } = new List<EntityField>();
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
     public class EntityField
     {
         public string Name { get; set; }
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
     public class Relationship
@@ -357,6 +390,33 @@ namespace Foray.Common
         public Entity FirstEntity { get; set; }
         public Entity SecondEntity { get; set; }
         public Entity NestedEntity { get; set; }
+
+        public override string ToString()
+        {
+            return FirstEntity.Name + GetDescriptor(RelationshipType) + SecondEntity.Name;
+
+        }
+
+        private string GetDescriptor(RelationshipType relationshipType)
+        {
+            switch (relationshipType)
+            {
+                case RelationshipType.ManyToMany:
+                    return "<>";
+                    break;
+
+                case RelationshipType.OneToMany:
+                    return ">";
+                    break;
+
+                case RelationshipType.OneToOne:
+                    return "-";
+                    break;
+                default:
+                    return "";
+
+            }
+        }
     }
 
     public enum RelationshipType

@@ -22,7 +22,6 @@ namespace Foray.Lib
             foreach (var entity in entities)
             {
                 schema.Entities.Add(entity);
-
             }
 
             var relationships = _relationshipParser.Parse(schema, input);
@@ -30,7 +29,6 @@ namespace Foray.Lib
             {
                 schema.Relationships.Add(relationship);
             }
-
 
             return schema;
         }

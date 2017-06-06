@@ -107,7 +107,14 @@ namespace Foray.Lib.Tests
         void Handle(IStateMachineContext<TOutput, IState<TOutput>> context);
     }
 
-    public class StringReader : IDisposable
+
+    public interface IStringReader : IDisposable
+    {
+        string GetLine();
+        bool IsDone();
+    }
+
+    public class StringReader : IStringReader
     {
         StreamReader _reader;
 
