@@ -51,7 +51,7 @@ namespace Foray.Common
         }
     }
 
-    public class SchemaContext : AbstractContext<StringReader, Schema>
+    public class SchemaContext : AbstractContext<IStringReader, Schema>
     {
 
     }
@@ -61,9 +61,9 @@ namespace Foray.Common
         void Handle(IContext<TInput, TOutput> context);
     }
 
-    public abstract class SchemaParserState : IState<StringReader, Schema>
+    public abstract class SchemaParserState : IState<IStringReader, Schema>
     {
-        public abstract void Handle(IContext<StringReader, Schema> context);
+        public abstract void Handle(IContext<IStringReader, Schema> context);
     }
 
     public class SchemaStartState : SchemaParserState
@@ -75,7 +75,7 @@ namespace Foray.Common
             _dsl = dsl;
         }
 
-        public override void Handle(IContext<StringReader, Schema> context)
+        public override void Handle(IContext<IStringReader, Schema> context)
         {
             context.Input = new StringReader(_dsl);
             context.Output = new Schema();
@@ -85,7 +85,7 @@ namespace Foray.Common
 
     public class FindingState : SchemaParserState
     {
-        public override void Handle(IContext<StringReader, Schema> context)
+        public override void Handle(IContext<IStringReader, Schema> context)
         {
             while (!context.Input.IsDone())
             {
@@ -102,7 +102,7 @@ namespace Foray.Common
 
     public class DeterminingState : SchemaParserState
     {
-        public override void Handle(IContext<StringReader, Schema> context)
+        public override void Handle(IContext<IStringReader, Schema> context)
         {
             if (context.Input.CurrentLine.StartsWith("\t"))
             {
@@ -121,7 +121,7 @@ namespace Foray.Common
 
     public class EntityState : SchemaParserState
     {
-        public override void Handle(IContext<StringReader, Schema> context)
+        public override void Handle(IContext<IStringReader, Schema> context)
         {
             var entityName = context.Input.CurrentLine.Trim();
             var entity = context.Output.FindEntity(entityName);
@@ -142,7 +142,7 @@ namespace Foray.Common
 
     public class FieldState : SchemaParserState
     {
-        public override void Handle(IContext<StringReader, Schema> context)
+        public override void Handle(IContext<IStringReader, Schema> context)
         {
             if (context.Variables.ContainsKey("lastentity"))
             {
@@ -172,7 +172,7 @@ namespace Foray.Common
     public class RelationshipState : SchemaParserState
     {
 
-        public override void Handle(IContext<StringReader, Schema> context)
+        public override void Handle(IContext<IStringReader, Schema> context)
         {
             context.Variables.Remove("lastentity");
             var test = context.Input.CurrentLine.Trim();
@@ -239,7 +239,7 @@ namespace Foray.Common
         {
             _message = message;
         }
-        public override void Handle(IContext<StringReader, Schema> context)
+        public override void Handle(IContext<IStringReader, Schema> context)
         {
             context.ErrorMessages.Add($"Line {context.Input.LineNumber}: {context.Input.CurrentLine}\r\n{_message}");
             context.Finished = true;

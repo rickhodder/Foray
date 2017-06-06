@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Remoting;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -13,15 +14,12 @@ namespace Foray.Common.Tests
         [Test]
         public void Handle_InputEmpty_MarksContextFinished()
         {
-            var test = new Mock<IContext<IStringReader,Schema>>();
-            test.Setup(m => m.Input.IsDone()).Returns(true);
-
             var sut = new FindingState();
-            var context = new Mock<IContext<StringReader, Schema>>();
+            var context = new Mock<IContext<IStringReader, Schema>>();
             context.Setup(m => m.Input.IsDone()).Returns(true);
+     
             sut.Handle(context.Object);
             Assert.IsTrue(context.Object.Finished);
-
         }
         
     }
@@ -167,7 +165,7 @@ namespace Foray.Common.Tests
         public void Execute_DuplicateEntityName_ErrorState()
         {
             var result = RunParserFor("product\r\ncustomer\r\nproduct");
-                     
+              
         }
 
         public class TextBuilder
