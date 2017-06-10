@@ -43,8 +43,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="AbstractContext.cs" />
+    <Compile Include="DeterminingState.cs" />
+    <Compile Include="Entity.cs" />
+    <Compile Include="EntityField.cs" />
+    <Compile Include="EntityState.cs" />
+    <Compile Include="ErrorState.cs" />
+    <Compile Include="FieldState.cs" />
+    <Compile Include="FindingState.cs" />
+    <Compile Include="IContext.cs" />
+    <Compile Include="IResult.cs" />
+    <Compile Include="IState.cs" />
+    <Compile Include="IStringReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Relationship.cs" />
+    <Compile Include="RelationshipState.cs" />
+    <Compile Include="RelationshipType.cs" />
+    <Compile Include="RelationshipTypeMapper.cs" />
+    <Compile Include="Schema.cs" />
+    <Compile Include="SchemaContext.cs" />
+    <Compile Include="SchemaParserState.cs" />
+    <Compile Include="SchemaStartState.cs" />
+    <Compile Include="StringReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

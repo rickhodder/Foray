@@ -1,60 +1,37 @@
-﻿using System;
-using System.Runtime.Remoting;
-using Moq;
+using System;
 using NUnit.Framework;
-using NUnit.Framework.Interfaces;
 
 namespace Foray.Common.Tests
 {
-
     [TestFixture]
-    public class FindingStateTests
+    public class SchemaContextTests : AbstractContextTestBase
     {
-        
-        [Test]
-        public void Handle_InputEmpty_MarksContextFinished()
-        {
-            var sut = new FindingState();
-            var context = new Mock<IContext<IStringReader, Schema>>();
-            context.Setup(m => m.Input.IsDone()).Returns(true);
-     
-            sut.Handle(context.Object);
-            Assert.IsTrue(context.Object.Finished);
-        }
-        
-    }
-
-    [TestFixture]
-    public class SchemaParserTests
-    {
-       
-
         [Test]
         public void Test()
         {
-            var result = RunParserFor("Customer\r\n\tFirstName\r\n\tLastName\r\nOrder\r\n\tOrderDate\r\n\tPrice\r\nCustomer>Order\r\nOrder>OrderDetail");
+            var result = Execute("Customer\r\n\tFirstName\r\n\tLastName\r\nOrder\r\n\tOrderDate\r\n\tPrice\r\nCustomer>Order\r\nOrder>OrderDetail");
             Render(result);
         }
 
         [Test]
-        public void Execute_EmptyString_EmptySchema()
+        public void Execute_WhenInputIsEmpty_ReturnsEmptySchema()
         {            
-            var result = RunParserFor("");
+            var result = Execute("");
             Assert.AreEqual(0, result.Entities.Count);
             Assert.AreEqual(0, result.Relationships.Count);
         }
 
         [Test]
-        public void Execute_OneLineEntity_OneEntity()
+        public void Execute_WhenInputHasOneEntity_ReturnsSchemaContainingEntity()
         {
-            var result = RunParserFor("Customer");
+            var result = Execute("Customer");
             Assert.IsNotNull(result.FindEntity("Customer"));
         }
 
         [Test]
         public void Execute_TwoLineEntity_TwoEntity()
         {
-            var result = RunParserFor("Customer\r\nOrder");
+            var result = Execute("Customer\r\nOrder");
             Assert.IsNotNull(result.FindEntity("Customer"));
             Assert.IsNotNull(result.FindEntity("Order"));
         }
@@ -62,7 +39,7 @@ namespace Foray.Common.Tests
         [Test]
         public void Execute_OneLineEntityOneLineField_OneEntityWithOneField()
         {
-            var result = RunParserFor("Customer\r\n\tFirstName");
+            var result = Execute("Customer\r\n\tFirstName");
             var entity = result.FindEntity("Customer");
             Assert.IsNotNull(entity);
             Assert.IsTrue(entity.Fields.Count==1);
@@ -71,7 +48,7 @@ namespace Foray.Common.Tests
         [Test]
         public void Execute_OneToOneRelationship_TwoEntities()
         {
-            var result = RunParserFor("Customer-Address");
+            var result = Execute("Customer-Address");
 
             Assert.IsNotNull(result.FindEntity("Customer"));
             Assert.IsNotNull(result.FindEntity("Address"));
@@ -80,7 +57,7 @@ namespace Foray.Common.Tests
         [Test]
         public void Execute_OneToManyRelationship_TwoEntities()
         {
-            var result = RunParserFor("Customer->Order");
+            var result = Execute("Customer->Order");
 
             Assert.IsNotNull(result.FindEntity("Customer"));
             Assert.IsNotNull(result.FindEntity("Order"));
@@ -89,7 +66,7 @@ namespace Foray.Common.Tests
         [Test]
         public void Execute_ManyToManyRelationship_TwoEntities()
         {
-            var result = RunParserFor("Customer<>Order");
+            var result = Execute("Customer<>Order");
 
             Assert.IsNotNull(result.FindEntity("Customer"));
             Assert.IsNotNull(result.FindEntity("Order"));
@@ -98,31 +75,12 @@ namespace Foray.Common.Tests
         [Test]
         public void Execute_ManyToMany2Relationship_ThreeEntities()
         {
-            var result = RunParserFor("Customer<CustomerOrder>Order");
+            var result = Execute("Customer<CustomerOrder>Order");
 
             Assert.IsNotNull(result.FindEntity("Customer"));
             Assert.IsNotNull(result.FindEntity("CustomerOrder"));
             Assert.IsNotNull(result.FindEntity("Order"));
         }
-
-        private Schema RunParserFor(string whatToParse)
-        {
-            var state = new SchemaStartState(whatToParse);
-            var context = new SchemaContext();
-            context.SetState(state);
-            var result = context.Execute();
-            if (context.ErrorMessages.Count>0)
-            {
-                foreach (var message in context.ErrorMessages)
-                {
-                    Console.WriteLine($"Error: {message}");
-                }
-            }
-            Render(result);
-            return result;
-
-        }
-
 
         [Test]
         public void Test2()
@@ -144,9 +102,9 @@ namespace Foray.Common.Tests
                         .Field("ShipDate")
                     .Relationship("Customer-Address")
                     .Relationship("Customer->Order")
-                 .Output;    
+                    .Output;    
 
-            var result = RunParserFor(input);
+            var result = Execute(input);
             Render(result);
 
             Assert.IsNotNull(result.FindEntity("Customer"));
@@ -164,8 +122,7 @@ namespace Foray.Common.Tests
         [Test]
         public void Execute_DuplicateEntityName_ErrorState()
         {
-            var result = RunParserFor("product\r\ncustomer\r\nproduct");
-              
+            var result = Execute("product\r\ncustomer\r\nproduct"); 
         }
 
         public class TextBuilder
@@ -189,45 +146,6 @@ namespace Foray.Common.Tests
                 Output += $"{relationship}\r\n";
                 return this;
             }
-
-        }
-
-        private void Render(Schema schema)
-        {
-            Console.WriteLine("Entities:\r\n");
-
-            foreach (var entity in schema.Entities)
-            {
-                RenderEntity(entity);
-                Console.WriteLine();
-            }
-
-            Console.WriteLine("Relationships:\r\n");
-
-            foreach (var relationship in schema.Relationships)
-            {
-                RenderRelationship(relationship);
-            }
-        }
-
-        private void RenderRelationship(Relationship relationship)
-        {
-            Console.WriteLine("Relationship: "+relationship);
-        }
-
-        private void RenderEntity(Entity entity)
-        {
-            Console.WriteLine("Entity: "+entity);
-            Console.WriteLine("Fields:");
-            foreach (var field in entity.Fields)
-            {
-                RenderField(field);
-            }
-        }
-
-        private void RenderField(EntityField field)
-        {
-            Console.WriteLine("    Field: " + field);
-        }
+        }       
     }
 }
